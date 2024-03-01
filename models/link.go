@@ -33,7 +33,7 @@ func InitLink() (*Link, error) {
 
 func (l *Link) Save() error {
 
-	database, err, ctx := db.Init()
+	database, ctx,err  := db.Init()
 	if err != nil {
 		return err
 	}
@@ -44,7 +44,7 @@ func (l *Link) Save() error {
 	return err
 }
 func (l Link) GetAll() ([]bson.M, error) {
-	database, err, ctx := db.Init()
+	database, ctx,err := db.Init()
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +63,7 @@ func (l Link) GetAll() ([]bson.M, error) {
 }
 
 func GetSingleAndIncreaseClicks(shortUrl string) (*Link, error) {
-	database, err, _ := db.Init()
+	database, _,err:= db.Init()
 	if err != nil {
 		return nil, err
 	}
