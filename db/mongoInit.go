@@ -26,10 +26,6 @@ func Init() (*mongo.Client, context.Context,error) {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	fmt.Print("DB Connection Success")
-
-
 	return client,ctx,err
 }
 
