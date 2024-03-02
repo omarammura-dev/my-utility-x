@@ -12,7 +12,7 @@ import (
 )
 
 func Init() (*mongo.Client, context.Context,error) {
-	err := godotenv.Load()
+	err := godotenv.Load("../.env")
 	if err != nil {
 		log.Fatal(".env file couldn't be loaded")
 		return nil,nil,err
@@ -20,9 +20,9 @@ func Init() (*mongo.Client, context.Context,error) {
 	
 	fmt.Print(os.Getenv("MONGO_URL"))
 	opts := options.Client().ApplyURI(os.Getenv("MONGO_URL"))
-	ctx,_ := context.WithTimeout(context.Background(),10*time.Second)
+	ctx, _ := context.WithTimeout(context.Background(),10*time.Second)
 	client, err := mongo.Connect(ctx, opts)
-
+	
 	if err != nil {
 		log.Fatal(err)
 	}

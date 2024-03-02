@@ -1,21 +1,19 @@
 package routes
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
-	"github.com/teris-io/shortid"
 )
 
 func RegisterRoutes() *gin.Engine {
 	server := gin.Default()
-	server.POST("/url/create", addLink)
+
+	//links
+	server.POST("/url/shrink", addLink)
 	server.GET("/url", getAllLinks)
 	server.GET("/:shorturl", getSingleUrl)
-	server.POST("/test", func(ctx *gin.Context) {
-		id, _ := shortid.Generate()
-		ctx.JSON(http.StatusOK, id)
-
-	})
+	server.DELETE("/url/:shortId",deleteUrl)
+	//users
+	server.POST("/register",register)
+	server.POST("/login",login)
 	return server
 }
