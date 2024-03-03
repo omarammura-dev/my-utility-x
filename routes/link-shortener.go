@@ -64,7 +64,6 @@ func getSingleUrl(ctx *gin.Context) {
 		if err != nil {
 			ctx.JSON(http.StatusNotFound, gin.H{"message": "Not found!"})
 		}
-
 		ctx.Redirect(http.StatusMovedPermanently, l.Url)
 	} else {
 		ctx.JSON(http.StatusNotFound, gin.H{"message": "Not found!"})
