@@ -17,7 +17,6 @@ func Init() (*mongo.Client, context.Context,error) {
 		log.Fatal(".env file couldn't be loaded")
 		return nil,nil,err
 	}
-	
 	fmt.Print(os.Getenv("MONGO_URL"))
 	opts := options.Client().ApplyURI(os.Getenv("MONGO_URL"))
 	ctx, _ := context.WithTimeout(context.Background(),10*time.Second)
