@@ -5,6 +5,7 @@ services:
 
 stages:
   - test
+  - build
   - deploy
 
 test:
@@ -12,6 +13,12 @@ test:
   script:
    - echo run tests in this section
 
+build:
+  stage: build
+  script:
+    - go mod download
+    - go build -o my-app .
+   
 stage-deploy-prod:
   stage: deploy
   only:
