@@ -12,7 +12,7 @@ import (
 )
 
 func Init() (*mongo.Client, context.Context,error) {
-	err := godotenv.Load("../.env")
+	err := godotenv.Load(".env")
 	if err != nil {
 		log.Fatal(".env file couldn't be loaded")
 		return nil,nil,err

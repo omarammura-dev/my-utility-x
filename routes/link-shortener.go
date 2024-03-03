@@ -27,6 +27,8 @@ func addLink(ctx *gin.Context) {
 		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Not Authorized!" +err.Error()})
 		return
 	}
+
+
 	link, err := models.InitLink()
 	if err != nil {
 		log.Fatalf("Something went wrong... %v", err)
@@ -49,6 +51,20 @@ func addLink(ctx *gin.Context) {
 }
 
 func getAllLinks(ctx *gin.Context) {
+
+	token := ctx.Request.Header.Get("Authorization")
+
+	if token == "" {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Not Authorized (empty)"})
+		return
+	}
+
+	_, err := utils.VerifyToken(token)
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Not Authorized!" +err.Error()})
+		return
+	}
+	
 	var link models.Link
 	linkList, err := link.GetAll()
 	if err != nil {
@@ -58,6 +74,7 @@ func getAllLinks(ctx *gin.Context) {
 }
 
 func getSingleUrl(ctx *gin.Context) {
+	
 	shortUrl := ctx.Param("shorturl")
 	if strings.HasPrefix(shortUrl, "U") {
 		l, err := models.GetSingleAndIncreaseClicks(shortUrl)
@@ -71,6 +88,24 @@ func getSingleUrl(ctx *gin.Context) {
 }
 
 func deleteUrl(ctx *gin.Context) {
+
+
+	token := ctx.Request.Header.Get("Authorization")
+
+	if token == "" {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Not Authorized (empty)"})
+		return
+	}
+
+	_, err := utils.VerifyToken(token)
+
+
+
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Not Authorized!" +err.Error()})
+		return
+	}
+	
 	id := ctx.Param("shortId")
 	if strings.HasPrefix(id, "U") {
 		l, err := models.GetSingleAndIncreaseClicks(id)
