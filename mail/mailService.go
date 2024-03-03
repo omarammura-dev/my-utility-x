@@ -28,5 +28,6 @@ func SendSimpleMessage() (string, error) {
 		fmt.Println(response.Body)
 		fmt.Println(response.Headers)
 	}
+	
 	return response.Body,nil
 }
