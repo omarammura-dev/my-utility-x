@@ -54,19 +54,22 @@ func getAllLinks(ctx *gin.Context) {
 
 	token := ctx.Request.Header.Get("Authorization")
 
+
+
 	if token == "" {
 		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Not Authorized (empty)"})
 		return
 	}
 
-	_, err := utils.VerifyToken(token)
+	userId, err := utils.VerifyToken(token)
 	if err != nil {
 		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Not Authorized!" +err.Error()})
 		return
 	}
 	
 	var link models.Link
-	linkList, err := link.GetAll()
+	
+	linkList, err := link.GetAll(userId)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "failed to get the links!"})
 	}

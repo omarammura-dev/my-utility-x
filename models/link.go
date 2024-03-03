@@ -45,7 +45,9 @@ func (l *Link) Save() error {
 	linksCollection.InsertOne(ctx, l)
 	return err
 }
-func (l Link) GetAll() ([]bson.M, error) {
+func (l Link) GetAll(userID primitive.ObjectID) ([]bson.M, error) {
+
+
 	database, ctx, err := db.Init()
 	if err != nil {
 		return nil, err
@@ -53,7 +55,7 @@ func (l Link) GetAll() ([]bson.M, error) {
 	
 	linksCollection := database.Database("myutilityx").Collection("links")
 
-	cursor, err := linksCollection.Find(ctx, bson.M{})
+	cursor, err := linksCollection.Find(ctx, bson.M{"userid":userID})
 	if err != nil {
 		return nil, err
 	}
