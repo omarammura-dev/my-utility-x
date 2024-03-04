@@ -4,6 +4,7 @@ import (
 	"errors"
 	"os"
 
+
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 
@@ -17,9 +18,11 @@ type User struct {
 	Username string
 	Email    string `binding:"required"`
 	Password string `binding:"required"`
+	İsVerified bool 
 }
 
-func (u User) Save() error {
+
+func (u *User) Save() error {
 	database, ctx, err := db.Init()
 
 	if err != nil {
@@ -30,13 +33,13 @@ func (u User) Save() error {
 	if err != nil {
 		return err
 	}
-	_, err = userCollection.InsertOne(ctx, u)
+	result, err := userCollection.InsertOne(ctx, u)
 
+	u.ID = result.InsertedID.(primitive.ObjectID)
 	return err
 }
 
 func (u *User) ValidateCredintials() error {
-
 	database, ctx, err := db.Init()
 
 	if err != nil {
@@ -63,4 +66,25 @@ func (u *User) ValidateCredintials() error {
 		return errors.New("invalid creditionals")
 	}
 	return nil
+}
+
+func (u User) Update() error {
+	database, ctx, err := db.Init()
+
+	if err != nil {
+		return err
+	}
+
+
+	if u.ID.IsZero() {
+		return errors.New("empty id")
+	}
+	filter := bson.M{"_id": u.ID}
+
+
+
+	_, err = database.Database(os.Getenv("MONGO_DB_NAME")).Collection("users").UpdateOne(ctx,filter,bson.M{"$set": bson.M{"isverified": true}})
+
+	
+	return err
 }
