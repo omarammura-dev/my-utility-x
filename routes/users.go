@@ -1,12 +1,15 @@
 package routes
 
 import (
-	"github.com/gin-gonic/gin"
 	"log"
+	"net/http"
+	"time"
+
+	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson"
 	"myutilityx.com/mailS"
 	"myutilityx.com/models"
 	"myutilityx.com/utils"
-	"net/http"
 )
 
 func register(ctx *gin.Context) {
@@ -22,9 +25,7 @@ func register(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "could not register the user"})
 	}
 
-
-
-	token, err := utils.GenerateToken(user.Email, user.Username, user.ID)
+	token, err := utils.GenerateToken(user.Email, user.Username, user.ID, time.Hour*2)
 
 	if err != nil {
 		ctx.JSON(http.StatusOK, gin.H{"error": "OOps, Something went wrong!"})
@@ -48,11 +49,11 @@ func login(ctx *gin.Context) {
 	err = user.ValidateCredintials()
 
 	if err != nil {
-		log.Fatalf("could not login the user: %v", err)
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "could not login the user"})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "could not login the user" + err.Error()})
+		return
 	}
 
-	token, err := utils.GenerateToken(user.Email, user.Username, user.ID)
+	token, err := utils.GenerateToken(user.Email, user.Username, user.ID, time.Hour*2)
 
 	if err != nil {
 		log.Fatalf("could not generate the token: %v", err)
@@ -78,11 +79,93 @@ func verifyEmail(ctx *gin.Context) {
 
 	user.ID = userId
 
-	err = user.Update()
+	err = user.Update(bson.M{"isverified": true})
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "oops!" + err.Error()})
 
 	}
 	ctx.JSON(http.StatusOK, gin.H{"message": "user is verified."})
+}
+
+func resetPassword(ctx *gin.Context) {
+	var user models.User
+	err := ctx.ShouldBindJSON(&user)
+
+	if user.Email == "" {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "email is emm"})
+	}
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "something went wrong (800)!" + err.Error()})
+	}
+
+	err = user.FindByEmail()
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "could not find the user!"})
+	}
+
+	token, err := utils.GenerateToken(user.Email, user.Username, user.ID, time.Minute*15)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "something went wrong (732)!"})
+	}
+
+	_, err = mailS.SendSimpleMessage("http://localhost:8080/user/reset-password/verify?token="+token, "omarammoralm10@gmail.com", user.Username)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "email could not send!"})
+	}
+}
+
+func resetPasswordVerify(ctx *gin.Context) {
+	token := ctx.Query("token")
+	var user models.User
+	if token == "" {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "something went wrong (732)!"})
+	}
+
+	var passwords struct {
+		OldPassword string `binding:"required"`
+		NewPassword string `binding:"required"`
+	}
+
+	err := ctx.ShouldBindJSON(&passwords)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "could not parse!"})
+	}
+
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Error !" + err.Error()})
+	}
+
+	userid, err := utils.VerifyToken(token)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "OOPs!" + err.Error()})
+	}
+
+	user.ID = userid
+
+	user.VerifyAndUpdatePassword(passwords.OldPassword)
+
+
+	hashedPassword,err := utils.HashPassword(passwords.NewPassword)
+
+	if err != nil {
+		ctx.JSON(http.StatusOK, gin.H{"error": "error!" + err.Error()})	
+		return
+	}
+
+
+
+	err = user.Update(bson.M{"password":hashedPassword})
+
+	if err != nil {
+		ctx.JSON(http.StatusOK, gin.H{"error": "error!" + err.Error()})	
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"message": "it is working!" + userid.String()})
 }
