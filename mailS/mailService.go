@@ -9,7 +9,7 @@ import (
 	"github.com/sendgrid/sendgrid-go/helpers/mail"
 )
 
-func SendSimpleMessage(url, userEmail, username string) (string, error) {
+func SendSimpleMessage(url, userEmail, username, templateId string) (string, error) {
 	from := mail.NewEmail("Omar Ammura", "no-reply@ammura.tech")
 	subject := "Sending with SendGrid is Fun"
 	to := mail.NewEmail(username, userEmail)
@@ -18,7 +18,7 @@ func SendSimpleMessage(url, userEmail, username string) (string, error) {
 
 	message.Personalizations[0].SetDynamicTemplateData("name", username)
 	message.Personalizations[0].SetDynamicTemplateData("callbackUrl", url)
-	message.SetTemplateID("d-958c75cdb588424fb80e49688fb2c3da")
+	message.SetTemplateID(templateId)
 	client := sendgrid.NewSendClient(os.Getenv("SENDGRID_API_KEY"))
 	response, err := client.Send(message)
 	if err != nil {

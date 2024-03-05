@@ -3,6 +3,7 @@ package routes
 import (
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -30,7 +31,7 @@ func register(ctx *gin.Context) {
 	if err != nil {
 		ctx.JSON(http.StatusOK, gin.H{"error": "OOps, Something went wrong!"})
 	}
-	_, err = mailS.SendSimpleMessage("http://localhost:8080/register/verify?token="+token, "omarammoralm10@gmail.com", "omarammura")
+	_, err = mailS.SendSimpleMessage(os.Getenv("API_URL")+"user/verify?token="+token, user.Email,user.Username,"d-958c75cdb588424fb80e49688fb2c3da")
 	if err != nil {
 		log.Fatalf("could not send verification email: %v", err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "could not send verification email"})
@@ -93,11 +94,13 @@ func resetPassword(ctx *gin.Context) {
 	err := ctx.ShouldBindJSON(&user)
 
 	if user.Email == "" {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "email is emm"})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "email is empty!"})
+		return
 	}
 
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "something went wrong (800)!" + err.Error()})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "something went wrong (643)! " + err.Error()})
+		return
 	}
 
 	err = user.FindByEmail()
@@ -112,7 +115,7 @@ func resetPassword(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "something went wrong (732)!"})
 	}
 
-	_, err = mailS.SendSimpleMessage("http://localhost:8080/user/reset-password/verify?token="+token, "omarammoralm10@gmail.com", user.Username)
+	_, err = mailS.SendSimpleMessage(os.Getenv("API_URL")+"user/reset-password/verify?token="+token, user.Email, user.Username,"d-325e3a95b2fb497d9c293519596f6a45")
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "email could not send!"})
 	}
@@ -157,8 +160,6 @@ func resetPasswordVerify(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, gin.H{"error": "error!" + err.Error()})	
 		return
 	}
-
-
 
 	err = user.Update(bson.M{"password":hashedPassword})
 
