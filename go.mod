@@ -1,6 +1,6 @@
 module myutilityx.com
 
-go 1.21.6
+go 1.21
 
 require (
 	github.com/bytedance/sonic v1.11.0 // indirect
