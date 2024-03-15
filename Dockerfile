@@ -1,5 +1,5 @@
 # BUILD
-FROM golang:1.16-alpine as BUILD
+FROM golang:1.21-alpine as BUILD
 ENV GO111MODULE=on
 WORKDIR /app
 COPY go.mod .
