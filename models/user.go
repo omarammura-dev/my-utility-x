@@ -46,6 +46,16 @@ func (u *User) ValidateCredintials() error {
 	filter := bson.M{"email": u.Email}
 	projection := bson.M{"password": 1}
 
+	err = u.FindByEmail()
+	
+	if err != nil {
+		return err
+	}
+
+	if !u.İsVerified {
+		return errors.New("please verify your email first")
+	}
+
 	var result struct {
 		ID       primitive.ObjectID `bson:"_id"`
 		Password string
@@ -84,13 +94,16 @@ func (u User) Update(field bson.M) error {
 func (u *User) FindByEmail() error{
 	database,ctx,err := db.Init()
 
+	var result User
 	filter := bson.M{"email":u.Email}
 	
 	if err != nil {
 		return err
 	}
 
-	err  = database.Database(os.Getenv("MONGO_DB_NAME")).Collection("users").FindOne(ctx,filter).Decode(&u)
+	err  = database.Database(os.Getenv("MONGO_DB_NAME")).Collection("users").FindOne(ctx,filter).Decode(&result)
+	u.İsVerified = result.İsVerified
+	u.Username = result.Username
 	return err
 }
 
@@ -111,8 +124,5 @@ func (u User) VerifyAndUpdatePassword(oldPass string) error {
 	if !ok {
 		return err
 	}
-
-	
-
 	return err
 }

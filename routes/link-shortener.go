@@ -6,28 +6,11 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"myutilityx.com/models"
-	"myutilityx.com/utils"
 )
 
 func addLink(ctx *gin.Context) {
-
-	token := ctx.Request.Header.Get("Authorization")
-
-	if token == "" {
-		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Not Authorized (empty)"})
-		return
-	}
-
-	userId, err := utils.VerifyToken(token)
-
-
-
-	if err != nil {
-		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Not Authorized!" +err.Error()})
-		return
-	}
-
 
 	link, err := models.InitLink()
 	if err != nil {
@@ -40,7 +23,12 @@ func addLink(ctx *gin.Context) {
 		return
 	}
 
-	link.UserId = userId
+	userId,exist := ctx.Get("userId")
+	if !exist {
+
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Oops,something went wrong!"})
+	}
+	link.UserId = userId.(primitive.ObjectID)
 	err = link.Save()
 
 	if err != nil {
@@ -52,24 +40,15 @@ func addLink(ctx *gin.Context) {
 
 func getAllLinks(ctx *gin.Context) {
 
-	token := ctx.Request.Header.Get("Authorization")
+	userId,exist := ctx.Get("userId")
 
-
-
-	if token == "" {
-		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Not Authorized (empty)"})
-		return
+	if !exist {
+		ctx.JSON(http.StatusInternalServerError,gin.H{"message":"Oops! something went wrong!"})
 	}
 
-	userId, err := utils.VerifyToken(token)
-	if err != nil {
-		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Not Authorized!" +err.Error()})
-		return
-	}
-	
 	var link models.Link
-	
-	linkList, err := link.GetAll(userId)
+
+	linkList, err := link.GetAll(userId.(primitive.ObjectID))
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "failed to get the links!"})
 	}
@@ -77,7 +56,7 @@ func getAllLinks(ctx *gin.Context) {
 }
 
 func getSingleUrl(ctx *gin.Context) {
-	
+
 	shortUrl := ctx.Param("shorturl")
 	if strings.HasPrefix(shortUrl, "U") {
 		l, err := models.GetSingleAndIncreaseClicks(shortUrl)
@@ -92,23 +71,6 @@ func getSingleUrl(ctx *gin.Context) {
 
 func deleteUrl(ctx *gin.Context) {
 
-
-	token := ctx.Request.Header.Get("Authorization")
-
-	if token == "" {
-		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Not Authorized (empty)"})
-		return
-	}
-
-	_, err := utils.VerifyToken(token)
-
-
-
-	if err != nil {
-		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Not Authorized!" +err.Error()})
-		return
-	}
-	
 	id := ctx.Param("shortId")
 	if strings.HasPrefix(id, "U") {
 		l, err := models.GetSingleAndIncreaseClicks(id)

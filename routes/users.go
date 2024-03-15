@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"os"
 	"time"
-
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"myutilityx.com/mailS"
@@ -36,21 +35,23 @@ func register(ctx *gin.Context) {
 		log.Fatalf("could not send verification email: %v", err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "could not send verification email"})
 	}
-	ctx.JSON(http.StatusOK, gin.H{"message": "user created!"})
+	ctx.JSON(http.StatusOK, gin.H{"user": user})
 }
 
 func login(ctx *gin.Context) {
+
 	var user models.User
 	err := ctx.ShouldBindJSON(&user)
 	if err != nil {
-		log.Fatalf("error while binding the user data: %v", err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "error while binding the user data"})
+		return
 	}
+
 
 	err = user.ValidateCredintials()
 
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "could not login the user" + err.Error()})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "" + err.Error()})
 		return
 	}
 
@@ -60,7 +61,7 @@ func login(ctx *gin.Context) {
 		log.Fatalf("could not generate the token: %v", err)
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "could not generate the token"})
 	}
-	ctx.JSON(http.StatusOK, gin.H{"message": "logged in", "token": token})
+	ctx.JSON(http.StatusOK, gin.H{"user": user, "token": token})
 }
 
 func verifyEmail(ctx *gin.Context) {

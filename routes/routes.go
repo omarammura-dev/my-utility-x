@@ -2,22 +2,25 @@ package routes
 
 import (
 	"github.com/gin-gonic/gin"
-
+	"myutilityx.com/middlewares"
 )
 
 func RegisterRoutes() *gin.Engine {
 	server := gin.Default()
-
+	server.Use(middlewares.CORSMiddleware())
+	authenticated := server.Group("/")
+	authenticated.Use(middlewares.Authenticate)
 	//links
-	server.POST("/url/shrink", addLink)
-	server.GET("/url", getAllLinks)
+	authenticated.POST("/url/shrink", addLink)
+	authenticated.GET("/url", getAllLinks)
+	authenticated.DELETE("/url/:shortId", deleteUrl)
 	server.GET("/:shorturl", getSingleUrl)
-	server.DELETE("/url/:shortId", deleteUrl)
+
 	//users
 	server.POST("user/register", register)
-	server.POST("user/verify",verifyEmail)
+	server.POST("user/verify", verifyEmail)
 	server.POST("user/login", login)
-	server.POST("user/reset-password",resetPassword)
-	server.POST("user/reset-password/verify",resetPasswordVerify)
+	server.POST("user/reset-password", resetPassword)
+	server.POST("user/reset-password/verify", resetPasswordVerify)
 	return server
 }
