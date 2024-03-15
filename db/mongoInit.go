@@ -14,7 +14,8 @@ func Init() (*mongo.Client, context.Context,error) {
 
 	fmt.Print(os.Getenv("MONGO_URL"))
 	opts := options.Client().ApplyURI(os.Getenv("MONGO_URL"))
-	ctx, _ := context.WithTimeout(context.Background(),10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(),10*time.Second)
+	defer cancel()
 	client, err := mongo.Connect(ctx, opts)
 	
 	if err != nil {

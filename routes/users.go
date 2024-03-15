@@ -152,8 +152,12 @@ func resetPasswordVerify(ctx *gin.Context) {
 
 	user.ID = userid
 
-	user.VerifyAndUpdatePassword(passwords.OldPassword)
+	err = user.VerifyAndUpdatePassword(passwords.OldPassword)
 
+	if err != nil {
+		ctx.JSON(http.StatusOK, gin.H{"error": "Please double check your password!"})	
+		return
+	}
 
 	hashedPassword,err := utils.HashPassword(passwords.NewPassword)
 

@@ -15,5 +15,9 @@ func main() {
 		return
 	}
 	routes := routes.RegisterRoutes()
-	routes.Run(":8080")
+	err = routes.Run(":8080")
+	if err != nil {
+		log.Fatal("failed to start the server!!")
+		return
+	}
 }
