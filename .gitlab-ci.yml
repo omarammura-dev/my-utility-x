@@ -15,6 +15,7 @@ stages:
   - test
   - build
   - release
+  - deploy
 
 lint:
     image: golangci/golangci-lint:latest
@@ -62,3 +63,10 @@ build_image:
     - if: $CI_COMMIT_BRANCH
       exists:
         - Dockerfile
+deploy:
+  stage: release
+  script:
+    - docker pull $CI_REGISTRY_IMAGE:latest
+    - docker run -d -p 8080:8080 $CI_REGISTRY_IMAGE:latest
+  only:
+    - master     
