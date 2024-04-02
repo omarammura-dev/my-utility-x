@@ -11,7 +11,6 @@ cache:
 build:
   stage: build
   script:
-    - go version -m # Print Go version
     - go mod download  # Download dependencies
     - go build .  # Build the application
 
