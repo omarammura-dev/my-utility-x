@@ -29,8 +29,8 @@ deploy:
     - ssh $USER@$IP_ADDRESS "bash /home/ubuntu/deployments/deploy.sh"
 
 
-artifacts:
-  paths:
-    - myutilityx.com  
-only:
-  - master  
+  artifacts:
+    paths:
+      - myutilityx.com  
+  only:
+    - master 
