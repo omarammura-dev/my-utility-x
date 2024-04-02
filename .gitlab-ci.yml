@@ -32,6 +32,6 @@ deploy:  # Update this stage with your deployment script
 
 artifacts:
   paths:
-    - main  # Include the built binary in artifacts
+    - myutilityx.com  
   only:
-    - main  # Run pipeline only on pushes to the main branch
+    - master
