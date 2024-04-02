@@ -1,72 +1,37 @@
-image: golang:latest
-
-.go-cache:
-    variables:
-        GOPATH: $CI_PROJECT_DIR/.go
-    cache:
-      paths:
-        - .go/pkg/mod/
-
-variables:
-  OUTPUT_NAME: __bin__/$CI_PROJECT_NAME
+image: golang:1.21-alpine  # Use Golang 1.21 with Alpine base
 
 stages:
-  - lint
-  - test
   - build
-  - release
-  - deploy
+  - deploy  # Assuming you have a separate deployment script
 
-lint:
-    image: golangci/golangci-lint:latest
-    stage: lint
-    extends: .go-cache
-    allow_failure: false
-    script:
-      - golangci-lint run -v
-
-test:
-  stage: test
-  script:
-    - go fmt $(go list ./... | grep -v /vendor/)
-    - go vet $(go list ./... | grep -v /vendor/)
-    - go test -race $(go list ./... | grep -v /vendor/)
+cache:
+  paths:
+    - go/pkg/mod  # Cache Golang dependencies
 
 build:
   stage: build
   script:
-    - mkdir -p $OUTPUT_NAME
-    - go build -o $OUTPUT_NAME ./...
-  artifacts:
-    paths:
-      - $OUTPUT_NAME
+    - go version -m # Print Go version
+    - go mod download  # Download dependencies
+    - go build .  # Build the application
 
-build_image:
-  image: docker:stable
-  stage: release
-  services:
-    - docker:dind
-  before_script:
-    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+deploy:  # Update this stage with your deployment script
+  stage: deploy
   script:
-    - |
-      if [[ "$CI_COMMIT_BRANCH" == "$CI_DEFAULT_BRANCH" ]]; then
-        tag=""
-        echo "Running on default branch '$CI_DEFAULT_BRANCH': tag = 'latest'"
-      else
-        tag=":$CI_COMMIT_REF_SLUG"
-        echo "Running on branch '$CI_COMMIT_BRANCH': tag = $tag"
-      fi
-    - docker build --pull -t "$CI_REGISTRY_IMAGE${tag}" .
-    - docker push "$CI_REGISTRY_IMAGE${tag}"
-  rules:
-    - if: $CI_COMMIT_BRANCH
-      exists:
-        - Dockerfile
-deploy:
-  stage: release
-  script:
-    - docker pull $CI_REGISTRY_IMAGE:latest
-    - docker run -d -p 8080:8080 $CI_REGISTRY_IMAGE:latest
+    - go mod download  # Download dependencies
+    - go build .
+    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+    - eval $(ssh-agent -s) && echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
+    - eval $(ssh-agent -s) && echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
+    - mkdir -p ~/.ssh
+    - chmod 700 ~/.ssh
+    - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
+    - scp -o StrictHostKeyChecking=no -r myutilityx.com $USER@$IP_ADDRESS:/tmp/
+    - ssh $USER@$IP_ADDRESS "bash /home/ubuntu/deployments/deploy.sh"
+
+
+artifacts:
+  paths:
+    - main  # Include the built binary in artifacts
   only:
-    - master     
+    - main  # Run pipeline only on pushes to the main branch
