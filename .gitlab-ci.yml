@@ -1,25 +1,25 @@
-image: golang:1.21-alpine  # Use Golang 1.21 with Alpine base
+image: golang:1.21-alpine  
 
 stages:
   - build
-  - deploy  # Assuming you have a separate deployment script
+  - deploy  
 
 cache:
   paths:
-    - go/pkg/mod  # Cache Golang dependencies
+    - go/pkg/mod  
 
 build:
   stage: build
   script:
-    - go mod download  # Download dependencies
-    - go build .  # Build the application
+    - go mod download  
+    - go build .  
 
-deploy:  # Update this stage with your deployment script
+deploy:  
   stage: deploy
   script:
-    - go mod download  # Download dependencies
+    - go mod download  
     - go build .
-    - 'which ssh-agent || ( apt-get update -y && apt-get install openssh-client -y )'
+    - 'which ssh-agent || ( apk update && apk add openssh-client )'
     - eval $(ssh-agent -s) && echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
     - eval $(ssh-agent -s) && echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
     - mkdir -p ~/.ssh
@@ -29,8 +29,8 @@ deploy:  # Update this stage with your deployment script
     - ssh $USER@$IP_ADDRESS "bash /home/ubuntu/deployments/deploy.sh"
 
 
-  artifacts:
-    paths:
-      - myutilityx.com
-  only:
-    - master 
+artifacts:
+  paths:
+    - myutilityx.com  
+only:
+  - master  
