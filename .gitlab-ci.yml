@@ -30,8 +30,8 @@ deploy:  # Update this stage with your deployment script
     - ssh $USER@$IP_ADDRESS "bash /home/ubuntu/deployments/deploy.sh"
 
 
-artifacts:
-  paths:
-    - myutilityx.com  
+  artifacts:
+    paths:
+      - myutilityx.com
   only:
-    - master
+    - master 
