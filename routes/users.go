@@ -51,7 +51,7 @@ func login(ctx *gin.Context) {
 	err = user.ValidateCredintials()
 
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "" + err.Error()})
+		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "" + err.Error()})
 		return
 	}
 
@@ -107,26 +107,31 @@ func resetPassword(ctx *gin.Context) {
 	err = user.FindByEmail()
 
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "could not find the user!"})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "There seems to be a discrepancy with the information provided. To ensure account security, we can't assist with password resets for unrecognized information."})
+		return
 	}
 
 	token, err := utils.GenerateToken(user.Email, user.Username, user.ID, time.Minute*15)
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "something went wrong (732)!"})
+		return
 	}
 
-	_, err = mailS.SendSimpleMessage(os.Getenv("API_URL")+"user/reset-password/verify?token="+token, user.Email, user.Username,"d-325e3a95b2fb497d9c293519596f6a45")
+	_, err = mailS.SendSimpleMessage(os.Getenv("UI_URL")+"auth/reset-password/confirm/"+token, user.Email,user.Username,"d-325e3a95b2fb497d9c293519596f6a45")
+
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "email could not send!"})
 	}
-}
+	ctx.JSON(http.StatusOK,gin.H{"message":"Reset password email sent successfully! please check your inbox."})
+}   
 
 func resetPasswordVerify(ctx *gin.Context) {
 	token := ctx.Query("token")
 	var user models.User
 	if token == "" {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "something went wrong (732)!"})
+    return
 	}
 
 	var passwords struct {
@@ -138,16 +143,15 @@ func resetPasswordVerify(ctx *gin.Context) {
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "could not parse!"})
+		return
 	}
 
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Error !" + err.Error()})
-	}
 
 	userid, err := utils.VerifyToken(token)
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "OOPs!" + err.Error()})
+		return
 	}
 
 	user.ID = userid
@@ -173,5 +177,5 @@ func resetPasswordVerify(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, gin.H{"message": "it is working!" + userid.String()})
+	ctx.JSON(http.StatusOK, gin.H{"message": "Password" + userid.String()})
 }
