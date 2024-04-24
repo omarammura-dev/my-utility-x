@@ -17,10 +17,10 @@ func RegisterRoutes() *gin.Engine {
 	server.GET("/:shorturl", getSingleUrl)
 
 	//users
-	server.POST("user/register", register)
-	server.POST("user/verify", verifyEmail)
-	server.POST("user/login", login)
-	server.POST("user/reset-password", resetPassword)
-	server.POST("user/reset-password/confirm", resetPasswordVerify)
+	server.POST("/user/register", register)
+	server.POST("/user/verify", verifyEmail)
+	server.POST("/user/login", login)
+	server.POST("/user/reset-password", resetPassword)
+	server.POST("/user/reset-password/confirm", resetPasswordVerify)
 	return server
 }
