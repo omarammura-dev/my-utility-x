@@ -1,12 +1,12 @@
 package routes
 
 import (
-	"log"
 	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"myutilityx.com/errors"
 	"myutilityx.com/models"
 )
 
@@ -14,7 +14,8 @@ func addLink(ctx *gin.Context) {
 
 	link, err := models.InitLink()
 	if err != nil {
-		log.Fatalf("Something went wrong... %v", err)
+		ctx.JSON(http.StatusBadRequest, errors.ErrSomethingWentWrong)
+		return
 	}
 	err = ctx.ShouldBindJSON(&link)
 

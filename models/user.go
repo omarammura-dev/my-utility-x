@@ -8,6 +8,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"myutilityx.com/db"
 	"myutilityx.com/utils"
+
 )
 
 type User struct {
@@ -42,6 +43,7 @@ func (u *User) ValidateCredintials() error {
 	if err != nil {
 		return err
 	}
+	
 
 	filter := bson.M{"email": u.Email}
 	projection := bson.M{"password": 1}
@@ -104,6 +106,16 @@ func (u *User) FindByEmail() error{
 	err  = database.Database(os.Getenv("MONGO_DB_NAME")).Collection("users").FindOne(ctx,filter).Decode(&result)
 	u.İsVerified = result.İsVerified
 	u.Username = result.Username
+	return err
+}
+
+func (u *User) FindById() error{
+	database,ctx,err := db.Init()
+	if err != nil {
+		return err
+	}
+	filter := bson.M{"_id":u.ID}
+	err  = database.Database(os.Getenv("MONGO_DB_NAME")).Collection("users").FindOne(ctx,filter).Decode(u)
 	return err
 }
 

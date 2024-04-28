@@ -85,4 +85,9 @@ var (
         Status:  http.StatusUnauthorized,
         Message: "Error!",
     }
+    ErrInvalidExpenseType = APIError{
+        Code:    "INVALID_EXPENSE_TYPE",
+        Status:  http.StatusInternalServerError,
+        Message: "Error!",
+    }
 )

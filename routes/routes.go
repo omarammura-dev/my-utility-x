@@ -18,9 +18,15 @@ func RegisterRoutes() *gin.Engine {
 
 	//users
 	server.POST("/user/register", register)
-	server.POST("/user/verify", verifyEmail)
+	server.GET("/user/verify", verifyEmail)
 	server.POST("/user/login", login)
 	server.POST("/user/reset-password", resetPassword)
 	server.POST("/user/reset-password/confirm", resetPasswordVerify)
+
+
+	//expenses statistics
+	authenticated.POST("/expense/add", addExpense)
+	authenticated.PUT("/expense/update/:id", updateExpense)
+	authenticated.GET("/expense/all",GetAllExpenses)
 	return server
 }
