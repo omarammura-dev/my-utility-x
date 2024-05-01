@@ -39,7 +39,7 @@ func addExpense(ctx *gin.Context){
 
 	err = expense.Save()
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError,errors.ErrInvalidExpenseType)
+		ctx.JSON(http.StatusInternalServerError, err.Error())
 	}
 	ctx.JSON(http.StatusNoContent,"")	
 }

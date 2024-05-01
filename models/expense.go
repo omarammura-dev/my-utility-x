@@ -1,7 +1,6 @@
 package models
 
 import (
-	"fmt"
 	"os"
 	"time"
 
@@ -11,20 +10,12 @@ import (
 	"myutilityx.com/db"
 )
 
-type ExpenseType string
-
-const (
-    SNACKS      ExpenseType = "SNACKS"
-    FASTFOOD ExpenseType = "FASTFOOD"
-    PERSONAL     ExpenseType = "PERSONAL"
-	OTHER ExpenseType = "OHTER"
-)
 type Expense struct {
     ID          primitive.ObjectID `bson:"_id,omitempty"`
     ExpenseName string             `bson:"expenseName" validate:"required"`
     ExpenseDate time.Time          `bson:"expenseDate" validate:"required"`
     UserId      primitive.ObjectID `bson:"userId" validate:"required"`
-    ExpenseType ExpenseType        `bson:"expenseType" validate:"required"`
+    ExpenseType string        `bson:"expenseType" validate:"required"`
 	Price float64        `bson:"price" validate:"required"`
 }
 
@@ -39,12 +30,6 @@ func (e *Expense) Save() error {
 	if err:= e.Validate(); err != nil {
 		return err
 	}
-
-	switch e.ExpenseType {
-    case SNACKS, FASTFOOD, PERSONAL, OTHER:
-    default:
-        return fmt.Errorf("invalid ExpenseType: %v", e.ExpenseType)
-    }
 
 	database,ctx,err  :=  db.Init()
 
