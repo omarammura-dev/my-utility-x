@@ -19,7 +19,6 @@ type Expense struct {
 	Price float64        `bson:"price" validate:"required"`
 }
 
-
 func (e *Expense)Validate() error {
 	validate := validator.New()
 	return validate.Struct(e)
