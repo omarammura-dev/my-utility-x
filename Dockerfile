@@ -7,6 +7,6 @@ COPY . .
 RUN go build -o main .
 FROM ubuntu:latest
 WORKDIR /app
-COPY /app/main .
+COPY --from=0 /app/backend/main .
 EXPOSE 8080
 CMD ["main"]
