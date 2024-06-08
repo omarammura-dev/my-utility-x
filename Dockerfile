@@ -4,7 +4,7 @@ WORKDIR /app/backend
 COPY go.mod ./
 RUN go mod download
 COPY . .
-RUN go build -o main .
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -tags netgo -ldflags '-w -extldflags "-static"' -o main .
 
 # FINAL STAGE
 FROM ubuntu:latest
