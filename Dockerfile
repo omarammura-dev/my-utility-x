@@ -1,12 +1,14 @@
 # BUILD
-FROM golang:1.21-alpine 
+FROM golang:1.21-alpine AS builder
 WORKDIR /app/backend
-COPY go.mod Gopkg.toml ./
+COPY go.mod ./
 RUN go mod download
 COPY . .
 RUN go build -o main .
+
+# FINAL STAGE
 FROM ubuntu:latest
 WORKDIR /app
-COPY --from=0 /app/backend/main .
+COPY --from=builder /app/backend/main .
 EXPOSE 8080
-CMD ["main"]
+CMD ["./main"]
