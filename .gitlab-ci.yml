@@ -29,20 +29,31 @@ build image:
     - docker build -t $CI_REGISTRY_IMAGE .
     - docker push $CI_REGISTRY_IMAGE
 
-deploy:  
+# deploy:  
+#   stage: deploy
+#   script:
+#     - go mod download  
+#     - go build .
+#     - 'which ssh-agent || ( apk update && apk add openssh-client )'
+#     - eval $(ssh-agent -s) && echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
+#     - eval $(ssh-agent -s) && echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
+#     - mkdir -p ~/.ssh
+#     - chmod 700 ~/.ssh
+#     - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
+#     - scp -o StrictHostKeyChecking=no -r myutilityx.com $USER@$IP_ADDRESS:/tmp/
+#     - ssh $USER@$IP_ADDRESS "bash /home/ubuntu/deployments/deploy-backend.sh"
+deploy:
   stage: deploy
   script:
-    - go mod download  
-    - go build .
     - 'which ssh-agent || ( apk update && apk add openssh-client )'
-    - eval $(ssh-agent -s) && echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
     - eval $(ssh-agent -s) && echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
     - mkdir -p ~/.ssh
     - chmod 700 ~/.ssh
     - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
-    - scp -o StrictHostKeyChecking=no -r myutilityx.com $USER@$IP_ADDRESS:/tmp/
-    - ssh $USER@$IP_ADDRESS "bash /home/ubuntu/deployments/deploy-backend.sh"
-
+    - ssh $USER@$IP_ADDRESS "docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY"
+    - ssh $USER@$IP_ADDRESS "docker pull $CI_REGISTRY_IMAGE"
+    - ssh $USER@$IP_ADDRESS "docker stop mux-backend || true && docker rm mux-backend || true"
+    - ssh $USER@$IP_ADDRESS "docker run -d --name mux-backend -p 8080:8080 $CI_REGISTRY_IMAGE"
 
   artifacts:
     paths:
