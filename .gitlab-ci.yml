@@ -50,6 +50,11 @@ deploy:
     - mkdir -p ~/.ssh
     - chmod 700 ~/.ssh
     - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
+    - ssh $USER@$IP_ADDRESS "echo \"MONGO_URL=$MONGO_URL\" > /app/backend/.env"
+    - ssh $USER@$IP_ADDRESS "echo \"MONGO_DB_NAME=$MONGO_DB_NAME\" >> /app/backend/.env"
+    - ssh $USER@$IP_ADDRESS "echo \"API_URL=$API_URL\" >> /app/backend/.env"
+    - ssh $USER@$IP_ADDRESS "echo \"UI_URL=$UI_URL\" >> /app/backend/.env"
+    - scp -o StrictHostKeyChecking=no .env $USER@$IP_ADDRESS:/app/backend
     - ssh $USER@$IP_ADDRESS "docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY"
     - ssh $USER@$IP_ADDRESS "docker pull $CI_REGISTRY_IMAGE"
     - ssh $USER@$IP_ADDRESS "docker stop mux-backend || true && docker rm mux-backend || true"
