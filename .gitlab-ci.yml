@@ -53,8 +53,7 @@ deploy:
     - ssh $USER@$IP_ADDRESS "docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY"
     - ssh $USER@$IP_ADDRESS "docker pull $CI_REGISTRY_IMAGE"
     - ssh $USER@$IP_ADDRESS "docker stop mux-backend || true && docker rm mux-backend || true"
-    - ssh $USER@$IP_ADDRESS "docker run -d --name mux-backend -p 8080:8080 $CI_REGISTRY_IMAGE"
-
+    - ssh $USER@$IP_ADDRESS "docker run -d --name mux-backend -p 8080:8080 -e MONGO_URL=$MONGO_URL -e MONGO_DB_NAME=$MONGO_DB_NAME -e API_URL=$API_URL -e UI_URL=$UI_URL $CI_REGISTRY_IMAGE"
   artifacts:
     paths:
       - myutilityx.com  
