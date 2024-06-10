@@ -26,8 +26,10 @@ build image:
     - docker:dind
   script:
     - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER $CI_REGISTRY --password-stdin
-    - docker build -t $CI_REGISTRY_IMAGE .
+    - docker build --build-arg MONGO_URL=$MONGO_URL --build-arg MONGO_DB_NAME=$MONGO_DB_NAME --build-arg API_URL=$API_URL --build-arg UI_URL=$UI_URL -t $CI_REGISTRY_IMAGE .
     - docker push $CI_REGISTRY_IMAGE
+  only:
+    -master  
 
 # deploy:  
 #   stage: deploy
