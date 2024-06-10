@@ -1,6 +1,4 @@
 # BUILD
-
-
 FROM --platform=linux/arm64 golang:1.21-alpine AS builder
 WORKDIR /app/backend
 ARG MONGO_URL
@@ -27,5 +25,6 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -a -tags netgo -ldflags '-w -
 FROM ubuntu:latest
 WORKDIR /app
 COPY --from=builder /app/backend/main .
+COPY --from=builder /app/backend/.env . 
 EXPOSE 8080
 CMD ["./main"]
