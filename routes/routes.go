@@ -1,6 +1,8 @@
 package routes
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"myutilityx.com/middlewares"
 )
@@ -15,7 +17,9 @@ func RegisterRoutes() *gin.Engine {
 	authenticated.GET("/url", getAllLinks)
 	authenticated.DELETE("/url/:shortId", deleteUrl)
 	server.GET("/:shorturl", getSingleUrl)
-
+	server.GET("/",func(ctx *gin.Context) {
+		ctx.JSON(http.StatusOK,gin.H{"API":"WORKING"})
+	})
 	//users
 	server.POST("/user/register", register)
 	server.GET("/user/verify", verifyEmail)
