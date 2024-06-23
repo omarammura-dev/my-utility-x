@@ -20,6 +20,7 @@ func RegisterRoutes() *gin.Engine {
 	server.GET("/",func(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK,gin.H{"API":"WORKING"})
 	})
+	server.GET("/check-db-connection", checkMongoDBConnection)
 	//users
 	server.POST("/user/register", register)
 	server.GET("/user/verify", verifyEmail)

@@ -12,6 +12,7 @@ import (
 	"myutilityx.com/mailS"
 	"myutilityx.com/models"
 	"myutilityx.com/utils"
+	"myutilityx.com/db"
 )
 
 
@@ -21,7 +22,6 @@ func register(ctx *gin.Context) {
 	var user models.User
 	err := ctx.ShouldBindJSON(&user)
 	if err != nil {
-		
 		ctx.JSON(http.StatusInternalServerError, errors.ErrBindingUserData)
 	}
 	err = user.Save()
@@ -182,3 +182,11 @@ func resetPasswordVerify(ctx *gin.Context) {
 	ctx.JSON(http.StatusNoContent, gin.H{"message": ""})
 }
 
+func checkMongoDBConnection(ctx *gin.Context) {
+    _, _, err := db.Init()
+    if err != nil {
+        ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to connect to MongoDB"})
+        return
+    }
+    ctx.JSON(http.StatusOK, gin.H{"message": "Successfully connected to MongoDB"})
+}
