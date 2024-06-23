@@ -23,20 +23,24 @@ func register(ctx *gin.Context) {
 	err := ctx.ShouldBindJSON(&user)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errors.ErrBindingUserData)
+		return
 	}
 	err = user.Save()
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errors.ErrSavingUser)
+		ctx.JSON(http.StatusInternalServerError, err.Error())
+		return
 	}
 
 	token, err := utils.GenerateToken(user.Email, user.Username, user.ID, time.Hour*2)
 
 	if err != nil {
 		ctx.JSON(http.StatusOK, errors.ErrSomethingWentWrong)
+		return
 	}
 	_, err = mailS.SendSimpleMessage(os.Getenv("API_URL")+"user/verify?token="+token, user.Email,user.Username,"d-958c75cdb588424fb80e49688fb2c3da")
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errors.ErrSendingVerificationEmail)
+		return
 	}
 	ctx.JSON(http.StatusOK, gin.H{"user": user})
 }

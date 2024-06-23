@@ -18,8 +18,12 @@ func Init() (*mongo.Client, context.Context,error) {
 	client, err := mongo.Connect(ctx, opts)
 	
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("Failed to connect to MongoDB: %v", err)
+        return nil, nil, err
 	}
+	err = client.Ping(ctx, nil)
+	if err != nil {
+        return nil,nil,err
+    }
 	return client,ctx,err
 }
-

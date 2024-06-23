@@ -12,7 +12,7 @@ import (
 )
 
 type User struct {
-	ID       primitive.ObjectID `bson:"_id,omitempty"`
+	ID      primitive.ObjectID `bson:"_id"`
 	Username string
 	Email    string 
 	Password string 
@@ -28,12 +28,19 @@ func (u *User) Save() error {
 	}
 	userCollection := database.Database("myutilityx").Collection("users")
 	u.Password, err = utils.HashPassword(u.Password)
+	u.ID = primitive.NewObjectID()
 	if err != nil {
 		return err
 	}
 	result, err := userCollection.InsertOne(ctx, u)
-
-	u.ID = result.InsertedID.(primitive.ObjectID)
+	if err != nil {
+		return err
+	}
+	if oid, ok := result.InsertedID.(primitive.ObjectID); ok {
+		u.ID = oid
+	} else {
+		return errors.New("type assertion of InsertedID to primitive.ObjectID failed")
+	}
 	return err
 }
 
