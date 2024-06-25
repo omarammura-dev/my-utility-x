@@ -1,22 +1,23 @@
 version: '3.8'
 services:
+  mongodb:
+    container_name: mongodb
+    image: mongo:latest
+    restart: always
+    volumes:
+      - mongodb:/data/db
   app:
-    image: golang:1.22.0-bookworm
-    volumes:
-      - .:/go/src/app
-    working_dir: /go/src/app
-    command: go run .
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MONGO_URL: ${MONGO_URL}
+        MONGO_DB_NAME: ${MONGO_DB_NAME}
+        API_URL: ${API_URL}
+        UI_URL: ${UI_URL}
+    ports:
+      - 8080:8080
     depends_on:
-      - db
-    env_file:
-      - .env
-  db:
-    image: mongo:7.0
-    volumes:
-      - mongodb_data:/data/db
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=${MONGO_USERNAME}
-      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASSWORD}
-      - MONGO_INITDB_DATABASE=${INIT_DB}
+      - mongodb
 volumes:
-  mongodb_data:
+  mongodb: {}

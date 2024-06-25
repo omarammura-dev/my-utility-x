@@ -24,26 +24,15 @@ build image:
   image: docker
   services:
     - docker:dind
+  before_script:
+    - apk add --no-cache docker-compose
   script:
     - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER $CI_REGISTRY --password-stdin
-    - docker build --build-arg MONGO_URL=$MONGO_URL --build-arg MONGO_DB_NAME=$MONGO_DB_NAME --build-arg API_URL=$API_URL --build-arg UI_URL=$UI_URL -t $CI_REGISTRY_IMAGE .
-    - docker push $CI_REGISTRY_IMAGE
+    - docker-compose build
+    - docker-compose push
   only:
-    - master  
+    - master   
 
-# deploy:  
-#   stage: deploy
-#   script:
-#     - go mod download  
-#     - go build .
-#     - 'which ssh-agent || ( apk update && apk add openssh-client )'
-#     - eval $(ssh-agent -s) && echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
-#     - eval $(ssh-agent -s) && echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
-#     - mkdir -p ~/.ssh
-#     - chmod 700 ~/.ssh
-#     - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
-#     - scp -o StrictHostKeyChecking=no -r myutilityx.com $USER@$IP_ADDRESS:/tmp/
-#     - ssh $USER@$IP_ADDRESS "bash /home/ubuntu/deployments/deploy-backend.sh"
 deploy:
   stage: deploy
   script:
