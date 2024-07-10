@@ -1,13 +1,13 @@
-image: golang:1.21-alpine  
+image: golang:1.21-alpine
 
 stages:
   - build
   - build-docker
-  - deploy  
+  - deploy
 
 cache:
   paths:
-    - go/pkg/mod  
+    - go/pkg/mod
 
 build:
   stage: build
@@ -16,8 +16,8 @@ build:
     - apk add --no-cache git
     - apk add --no-cache openssh-client
   script:
-    - go mod download  
-    - go build .  
+    - go mod download
+    - go build .
 
 build image:
   stage: build-docker
@@ -31,27 +31,23 @@ build image:
     - docker-compose up
     - docker-compose push
   only:
-    - master   
+    - master
 
 deploy:
   stage: deploy
   script:
-    - 'which ssh-agent || ( apk update && apk add openssh-client )'
+    - "which ssh-agent || ( apk update && apk add openssh-client )"
     - eval $(ssh-agent -s) && echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
     - mkdir -p ~/.ssh
     - chmod 700 ~/.ssh
     - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
     - ssh $USER@$IP_ADDRESS "mkdir -p /app/backend"
-    - ssh $USER@$IP_ADDRESS "echo \"MONGO_URL=$MONGO_URL\" > /app/backend/.env"
-    - ssh $USER@$IP_ADDRESS "echo \"MONGO_DB_NAME=$MONGO_DB_NAME\" >> /app/backend/.env"
-    - ssh $USER@$IP_ADDRESS "echo \"API_URL=$API_URL\" >> /app/backend/.env"
-    - ssh $USER@$IP_ADDRESS "echo \"UI_URL=$UI_URL\" >> /app/backend/.env"
     - ssh $USER@$IP_ADDRESS "docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY"
     - ssh $USER@$IP_ADDRESS "docker pull $CI_REGISTRY_IMAGE"
     - ssh $USER@$IP_ADDRESS "docker stop mux-backend || true && docker rm mux-backend || true"
-    - ssh $USER@$IP_ADDRESS "docker network create my-network || true"
-    - ssh $USER@$IP_ADDRESS "docker run -d --name mux-backend --network my-network -p 8080:8080 -e MONGO_URL=$MONGO_URL -e MONGO_DB_NAME=$MONGO_DB_NAME -e API_URL=$API_URL -e UI_URL=$UI_URL $CI_REGISTRY_IMAGE"  artifacts:
+    - ssh $USER@$IP_ADDRESS "docker run -d --name mux-backend -p 8080:8080 $CI_REGISTRY_IMAGE"
+  artifacts:
     paths:
-      - myutilityx.com  
+      - myutilityx.com
   only:
-    - master 
+    - master
