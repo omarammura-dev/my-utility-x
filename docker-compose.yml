@@ -19,7 +19,5 @@ services:
       UI_URL: https://mux.com
     depends_on:
       - mongodb
-    networks:
-      - my-network
 volumes:
   mongodb: {}
