@@ -3,11 +3,11 @@ services:
   mongodb:
     container_name: database_container
     image: mongo:latest
-    ports:
-      - 27017:27017
     restart: always
     volumes:
       - mongodb:/data/db
+    networks:
+      - my-network
   mux_backend:
     build: .
     ports:
@@ -19,5 +19,7 @@ services:
       UI_URL: https://mux.com
     depends_on:
       - mongodb
+    networks:
+      - my-network
 volumes:
   mongodb: {}
