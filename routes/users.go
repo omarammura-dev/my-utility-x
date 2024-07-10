@@ -1,22 +1,18 @@
 package routes
 
 import (
-	
 	"net/http"
 	"os"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
+	"myutilityx.com/db"
 	"myutilityx.com/errors"
 	"myutilityx.com/mailS"
 	"myutilityx.com/models"
 	"myutilityx.com/utils"
-	"myutilityx.com/db"
 )
-
-
-
 
 func register(ctx *gin.Context) {
 	var user models.User
@@ -37,7 +33,7 @@ func register(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, errors.ErrSomethingWentWrong)
 		return
 	}
-	_, err = mailS.SendSimpleMessage(os.Getenv("API_URL")+"user/verify?token="+token, user.Email,user.Username,"d-958c75cdb588424fb80e49688fb2c3da")
+	_, err = mailS.SendSimpleMessage(os.Getenv("API_URL")+"user/verify?token="+token, user.Email, user.Username, "d-958c75cdb588424fb80e49688fb2c3da")
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errors.ErrSendingVerificationEmail)
 		return
@@ -53,7 +49,6 @@ func login(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errors.ErrBindingUserData)
 		return
 	}
-
 
 	err = user.ValidateCredintials()
 
@@ -124,20 +119,20 @@ func resetPassword(ctx *gin.Context) {
 		return
 	}
 
-	_, err = mailS.SendSimpleMessage(os.Getenv("UI_URL")+"auth/reset-password/confirm/"+token, user.Email,user.Username,"d-325e3a95b2fb497d9c293519596f6a45")
+	_, err = mailS.SendSimpleMessage(os.Getenv("UI_URL")+"auth/reset-password/confirm/"+token, user.Email, user.Username, "d-325e3a95b2fb497d9c293519596f6a45")
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errors.ErrSendingResetPasswordEmail)
 	}
-	ctx.JSON(http.StatusOK,gin.H{"message":"Reset password email sent successfully! please check your inbox."})
-}   
+	ctx.JSON(http.StatusOK, gin.H{"message": "Reset password email sent successfully! please check your inbox."})
+}
 
 func resetPasswordVerify(ctx *gin.Context) {
 	token := ctx.Query("token")
 	var user models.User
 	if token == "" {
 		ctx.JSON(http.StatusInternalServerError, errors.ErrSomethingWentWrong)
-    return
+		return
 	}
 
 	var passwords struct {
@@ -152,7 +147,6 @@ func resetPasswordVerify(ctx *gin.Context) {
 		return
 	}
 
-
 	userid, err := utils.VerifyToken(token)
 
 	if err != nil {
@@ -165,21 +159,21 @@ func resetPasswordVerify(ctx *gin.Context) {
 	err = user.VerifyAndUpdatePassword(passwords.OldPassword)
 
 	if err != nil {
-		ctx.JSON(http.StatusUnauthorized, errors.ErrVerifyingAndUpdatePassword)	
+		ctx.JSON(http.StatusUnauthorized, errors.ErrVerifyingAndUpdatePassword)
 		return
 	}
 
-	hashedPassword,err := utils.HashPassword(passwords.NewPassword)
+	hashedPassword, err := utils.HashPassword(passwords.NewPassword)
 
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "error!" + err.Error()})	
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "error!" + err.Error()})
 		return
 	}
 
-	err = user.Update(bson.M{"password":hashedPassword})
+	err = user.Update(bson.M{"password": hashedPassword})
 
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "error!" + err.Error()})	
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "error!" + err.Error()})
 		return
 	}
 
@@ -187,10 +181,23 @@ func resetPasswordVerify(ctx *gin.Context) {
 }
 
 func checkMongoDBConnection(ctx *gin.Context) {
-    _, _, err := db.Init()
-    if err != nil {
-        ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to connect to MongoDB"})
-        return
-    }
-    ctx.JSON(http.StatusOK, gin.H{"message": "Successfully connected to MongoDB"})
+	_, _, err := db.Init()
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to connect to MongoDB"})
+		return
+	}
+	ctx.JSON(http.StatusOK, gin.H{"message": "Successfully connected to MongoDB"})
+}
+
+func saveSms(ctx *gin.Context) {
+	var sms models.SMS
+	err := ctx.ShouldBindJSON(sms)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "failed to bind!"})
+	}
+
+	err = sms.Save()
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "failed to save SMS!"})
+	}
 }
