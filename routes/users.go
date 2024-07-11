@@ -186,7 +186,7 @@ func checkMongoDBConnection(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to connect to MongoDB//" + os.Getenv("MONGO_URL")})
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{"message": "Successfully connected to MongoDB"})
+	ctx.JSON(http.StatusOK, gin.H{"message": "Successfully connected to MongoDB///"})
 }
 
 func saveSms(ctx *gin.Context) {

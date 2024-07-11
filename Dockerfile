@@ -1,5 +1,5 @@
 # BUILD
-FROM --platform=linux/amd64 golang:1.21-alpine AS builder
+FROM golang:1.21-alpine
 WORKDIR /usr/src/app/backend
 ARG MONGO_URL
 ARG MONGO_DB_NAME

@@ -28,8 +28,8 @@ build image:
     - apk add --no-cache docker-compose
   script:
     - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER $CI_REGISTRY --password-stdin
-    - docker-compose up -d
-    - docker-compose push
+    - docker compose up -d --build
+    - docker compose push
   only:
     - master
 
