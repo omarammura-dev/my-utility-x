@@ -57,7 +57,7 @@ deploy:
     # - ssh $USER@$IP_ADDRESS "cd /app/backend && docker-compose up -d --build"
     - scp ./docker-compose.yml $USER@$IP_ADDRESS:/
     # - ssh $USER@$IP_ADDRESS "cd / && docker-compose pull"
-    - ssh $USER@$IP_ADDRESS "cd / && docker-compose up -d --build"
+    - ssh $USER@$IP_ADDRESS "cd / && docker-compose -p back-app up -d --build"
   artifacts:
     paths:
       - myutilityx.com
