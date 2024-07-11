@@ -9,7 +9,7 @@ services:
     networks:
       - my-network
   mux_backend:
-    build: .
+    image: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
     platform: linux/arm64
     ports:
       - 8080:8080
