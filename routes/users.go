@@ -183,7 +183,7 @@ func resetPasswordVerify(ctx *gin.Context) {
 func checkMongoDBConnection(ctx *gin.Context) {
 	_, _, err := db.Init()
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to connect to MongoDB"})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to connect to MongoDB//" + os.Getenv("MONGO_URL")})
 		return
 	}
 	ctx.JSON(http.StatusOK, gin.H{"message": "Successfully connected to MongoDB"})
