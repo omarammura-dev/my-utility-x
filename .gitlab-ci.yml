@@ -24,12 +24,15 @@ build image:
   image: docker
   services:
     - docker:dind
+  variables:
+    DOCKER_IMAGE_TAG: $CI_REGISTRY_IMAGE:CI_COMMIT_REF_SLUG
   before_script:
     - apk add --no-cache docker-compose
   script:
     - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER $CI_REGISTRY --password-stdin
-    - docker compose up -d --build
-    - docker compose push
+    - docker compose build
+    - docker tag mux_backend $DOCKER_IMAGE_TAG
+    - docker push
   # only:
   #   - master
 
@@ -48,16 +51,17 @@ deploy:
     # - mkdir -p ~/.ssh
     # - chmod 700 ~/.ssh
     # - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
-    # - ssh $USER@$IP_ADDRESS "mkdir -p /app/backend"
-    # - ssh $USER@$IP_ADDRESS "docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY"
-    # # Pull the latest images as per docker-compose.yml
-    # - ssh $USER@$IP_ADDRESS "cd /app/backend && docker-compose pull"
-    # # Stop, remove, and redeploy containers as per docker-compose.yml
-    # - ssh $USER@$IP_ADDRESS "cd /app/backend && docker-compose down"
-    # - ssh $USER@$IP_ADDRESS "cd /app/backend && docker-compose up -d --build"
-    - scp ./docker-compose.yml $USER@$IP_ADDRESS:/
-    - ssh $USER@$IP_ADDRESS "cd / && docker-compose -p back-app pull"
-    - ssh $USER@$IP_ADDRESS "cd / && docker-compose -p back-app up -d --build"
+    # - ssh $USER@$IP_ADDRESS "mkdir -p /"
+    - ssh $USER@$IP_ADDRESS "docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY"
+    # Pull the latest images as per docker-compose.yml
+    - ssh $USER@$IP_ADDRESS "cd / && docker-compose pull"
+    # Stop, remove, and redeploy containers as per docker-compose.yml
+    - ssh $USER@$IP_ADDRESS "cd / && docker-compose down"
+    - ssh $USER@$IP_ADDRESS "cd / && docker-compose up -d --build"
+    # - scp ./docker-compose.yml $USER@$IP_ADDRESS:/
+    # - scp ./Dockerfile $USER@$IP_ADDRESS:/
+    # - ssh $USER@$IP_ADDRESS "cd / && docker-compose -p back-app pull"
+    # - ssh $USER@$IP_ADDRESS "cd / && docker-compose -p back-app up -d --build"
   artifacts:
     paths:
       - myutilityx.com
