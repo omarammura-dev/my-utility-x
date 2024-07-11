@@ -43,14 +43,11 @@ deploy:
     - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
     - ssh $USER@$IP_ADDRESS "mkdir -p /app/backend"
     - ssh $USER@$IP_ADDRESS "docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY"
-    # Pull and deploy the MongoDB container
-    - ssh $USER@$IP_ADDRESS "docker pull mongo:latest"
-    - ssh $USER@$IP_ADDRESS "docker stop database_container || true && docker rm database_container || true"
-    - ssh $USER@$IP_ADDRESS "docker run -d --name database_container -p 27017:27017 mongo:latest"
-    # Pull and deploy the mux-backend container
-    - ssh $USER@$IP_ADDRESS "docker pull $CI_REGISTRY_IMAGE"
-    - ssh $USER@$IP_ADDRESS "docker stop mux-backend || true && docker rm mux-backend || true"
-    - ssh $USER@$IP_ADDRESS "docker run -d --name mux-backend -p 8080:8080 $CI_REGISTRY_IMAGE"
+    # Pull the latest images as per docker-compose.yml
+    - ssh $USER@$IP_ADDRESS "cd /app/backend && docker-compose pull"
+    # Stop, remove, and redeploy containers as per docker-compose.yml
+    - ssh $USER@$IP_ADDRESS "cd /app/backend && docker-compose down"
+    - ssh $USER@$IP_ADDRESS "cd /app/backend && docker-compose up -d --build"
   artifacts:
     paths:
       - myutilityx.com
