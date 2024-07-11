@@ -55,9 +55,9 @@ deploy:
     # # Stop, remove, and redeploy containers as per docker-compose.yml
     # - ssh $USER@$IP_ADDRESS "cd /app/backend && docker-compose down"
     # - ssh $USER@$IP_ADDRESS "cd /app/backend && docker-compose up -d --build"
-    - scp ./docker-compose.yml $USER@$IP_ADDRESS:/usr/backend/
-    - ssh $USER@$IP_ADDRESS "cd /usr/backend/ && docker-compose pull"
-    - ssh $USER@$IP_ADDRESS "cd /usr/backend/ && docker-compose up -d --build"
+    - scp ./docker-compose.yml $USER@$IP_ADDRESS:/
+    - ssh $USER@$IP_ADDRESS "cd / && docker-compose pull"
+    - ssh $USER@$IP_ADDRESS "cd / && docker-compose up -d --build"
   artifacts:
     paths:
       - myutilityx.com
