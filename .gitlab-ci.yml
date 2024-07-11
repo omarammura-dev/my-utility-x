@@ -30,8 +30,8 @@ build image:
     - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER $CI_REGISTRY --password-stdin
     - docker compose up -d --build
     - docker compose push
-  only:
-    - master
+  # only:
+  #   - master
 
 deploy:
   stage: deploy
@@ -56,10 +56,10 @@ deploy:
     # - ssh $USER@$IP_ADDRESS "cd /app/backend && docker-compose down"
     # - ssh $USER@$IP_ADDRESS "cd /app/backend && docker-compose up -d --build"
     - scp ./docker-compose.yml $USER@$IP_ADDRESS:/
-    # - ssh $USER@$IP_ADDRESS "cd / && docker-compose pull"
+    - ssh $USER@$IP_ADDRESS "cd / && docker-compose -p back-app pull"
     - ssh $USER@$IP_ADDRESS "cd / && docker-compose -p back-app up -d --build"
   artifacts:
     paths:
       - myutilityx.com
-  only:
-    - master
+  # only:
+  #   - master
