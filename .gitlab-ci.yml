@@ -24,44 +24,32 @@ build image:
   image: docker
   services:
     - docker:dind
-  variables:
-    DOCKER_IMAGE_TAG: $CI_REGISTRY_IMAGE:CI_COMMIT_REF_SLUG
-  before_script:
-    - apk add --no-cache docker-compose
   script:
     - echo $CI_REGISTRY_PASSWORD | docker login -u $CI_REGISTRY_USER $CI_REGISTRY --password-stdin
-    - docker compose build
-    - docker tag mux_backend $DOCKER_IMAGE_TAG
-    - docker push
+    - docker build --platform linux/arm64 --build-arg MONGO_URL=$MONGO_URL --build-arg MONGO_DB_NAME=$MONGO_DB_NAME --build-arg API_URL=$API_URL --build-arg UI_URL=$UI_URL -t $CI_REGISTRY_IMAGE .
+    - docker push $CI_REGISTRY_IMAGE
+
   # only:
   #   - master
 
 deploy:
   stage: deploy
-  before_script:
-    - apk add --no-cache openssh-client
-    - eval $(ssh-agent -s)
-    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+  script:
+    - "which ssh-agent || ( apk update && apk add openssh-client )"
+    - eval $(ssh-agent -s) && echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
     - mkdir -p ~/.ssh
     - chmod 700 ~/.ssh
-    - echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config
-  script:
-    # - "which ssh-agent || ( apk update && apk add openssh-client )"
-    # - eval $(ssh-agent -s) && echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
-    # - mkdir -p ~/.ssh
-    # - chmod 700 ~/.ssh
-    # - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
-    # - ssh $USER@$IP_ADDRESS "mkdir -p /"
+    - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
+    - ssh $USER@$IP_ADDRESS "mkdir -p /app/backend"
+    - ssh $USER@$IP_ADDRESS "echo \"MONGO_URL=$MONGO_URL\" > /app/backend/.env"
+    - ssh $USER@$IP_ADDRESS "echo \"MONGO_DB_NAME=$MONGO_DB_NAME\" >> /app/backend/.env"
+    - ssh $USER@$IP_ADDRESS "echo \"API_URL=$API_URL\" >> /app/backend/.env"
+    - ssh $USER@$IP_ADDRESS "echo \"UI_URL=$UI_URL\" >> /app/backend/.env"
     - ssh $USER@$IP_ADDRESS "docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY"
-    # Pull the latest images as per docker-compose.yml
-    - ssh $USER@$IP_ADDRESS "cd / && docker-compose pull"
-    # Stop, remove, and redeploy containers as per docker-compose.yml
-    - ssh $USER@$IP_ADDRESS "cd / && docker-compose down"
-    - ssh $USER@$IP_ADDRESS "cd / && docker-compose up -d --build"
-    # - scp ./docker-compose.yml $USER@$IP_ADDRESS:/
-    # - scp ./Dockerfile $USER@$IP_ADDRESS:/
-    # - ssh $USER@$IP_ADDRESS "cd / && docker-compose -p back-app pull"
-    # - ssh $USER@$IP_ADDRESS "cd / && docker-compose -p back-app up -d --build"
+    - ssh $USER@$IP_ADDRESS "docker pull $CI_REGISTRY_IMAGE"
+    - ssh $USER@$IP_ADDRESS "docker stop mux-backend || true && docker rm mux-backend || true"
+    - ssh $USER@$IP_ADDRESS "docker network create my-network || true"
+    - ssh $USER@$IP_ADDRESS "docker run -d --name mux-backend --network my-network -p 8080:8080 -e MONGO_URL=$MONGO_URL -e MONGO_DB_NAME=$MONGO_DB_NAME -e API_URL=$API_URL -e UI_URL=$UI_URL $CI_REGISTRY_IMAGE"
   artifacts:
     paths:
       - myutilityx.com

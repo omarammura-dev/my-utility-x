@@ -8,20 +8,6 @@ services:
       - mongodb:/data/db
     networks:
       - my-network
-  mux_backend:
-    image: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
-    platform: linux/arm64
-    ports:
-      - 8080:8080
-    environment:
-      MONGO_URL: mongodb://mongodb:27017
-      MONGO_DB_NAME: myutilityx
-      API_URL: https://api.mux.com
-      UI_URL: https://mux.com
-    depends_on:
-      - mongodb
-    networks:
-      - my-network
 volumes:
   mongodb: {}
 networks:
