@@ -23,7 +23,7 @@ func RegisterRoutes() *gin.Engine {
 	server.GET("/check-db-connection", checkMongoDBConnection)
 	//users
 	server.POST("/user/register", register)
-	server.POST("/save-sms-to-db", saveSms)
+	server.POST("/save-sms", saveSms)
 	server.GET("/user/verify", verifyEmail)
 	server.POST("/user/login", login)
 	server.POST("/user/reset-password", resetPassword)
