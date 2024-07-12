@@ -40,8 +40,7 @@ deploy:
     - eval $(ssh-agent -s) && echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
     - mkdir -p ~/.ssh
     - chmod 700 ~/.ssh
-   
-    # - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
+    - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
     # - ssh $USER@$IP_ADDRESS "mkdir -p /app/backend"
     # - ssh $USER@$IP_ADDRESS "echo \"MONGO_URL=$MONGO_URL\" > /app/backend/.env"
     # - ssh $USER@$IP_ADDRESS "echo \"MONGO_DB_NAME=$MONGO_DB_NAME\" >> /app/backend/.env"
