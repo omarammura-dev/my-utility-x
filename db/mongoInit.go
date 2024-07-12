@@ -12,7 +12,7 @@ import (
 
 func Init() (*mongo.Client, context.Context,error) {
 
-	fmt.Print(os.Getenv("MONGO_URL"))
+	fmt.Print(os.Getenv("MONGO_URL"),"SSAFAFa")
 	opts := options.Client().ApplyURI(os.Getenv("MONGO_URL"))
 	ctx, _ := context.WithTimeout(context.Background(),10*time.Second)
 	client, err := mongo.Connect(ctx, opts)
