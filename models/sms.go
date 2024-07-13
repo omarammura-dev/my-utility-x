@@ -9,7 +9,7 @@ import (
 
 type SMS struct {
 	ID   primitive.ObjectID `bson:"_id"`
-	Code string
+	Code string             `json:"code"`
 }
 
 func (s *SMS) Save() error {

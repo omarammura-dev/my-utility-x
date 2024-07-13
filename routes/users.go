@@ -189,15 +189,3 @@ func checkMongoDBConnection(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"message": "Successfully connected to MongoDB"})
 }
 
-func saveSms(ctx *gin.Context) {
-	var sms models.SMS
-	err := ctx.ShouldBindJSON(sms)
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"message": "failed to bind!"})
-	}
-
-	err = sms.Save()
-	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"message": "failed to save SMS!"})
-	}
-}
