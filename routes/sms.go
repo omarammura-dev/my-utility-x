@@ -21,3 +21,12 @@ func saveSms(ctx *gin.Context) {
 		return
 	}
 }
+func getSms(ctx *gin.Context) {
+	var sms models.SMS
+	err := sms.Get()
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "error while finding the sms"})
+	}
+	ctx.JSON(http.StatusOK, sms)
+	sms.Delete()
+}

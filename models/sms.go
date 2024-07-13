@@ -3,7 +3,9 @@ package models
 import (
 	"errors"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"myutilityx.com/db"
 )
 
@@ -30,4 +32,27 @@ func (s *SMS) Save() error {
 		return errors.New("type assertion of InsertedID to primitive.ObjectID failed")
 	}
 	return err
+}
+func (s *SMS) Get() error {
+	database, ctx, err := db.Init()
+	if err != nil {
+		return err
+	}
+	coll := database.Database("myutilityx").Collection("sms")
+	opts := options.FindOne().SetSort(bson.M{"$natural": -1})
+	if err = coll.FindOne(ctx, bson.M{}, opts).Decode(&s); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (s *SMS) Delete() error {
+	database, ctx, err := db.Init()
+	if err != nil {
+		return err
+	}
+
+	coll := database.Database("myutilityx").Collection("sms")
+	coll.DeleteMany(ctx, bson.M{"code": s.Code})
+	return nil
 }
