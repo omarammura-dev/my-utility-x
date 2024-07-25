@@ -11,13 +11,13 @@ import (
 )
 
 type Link struct {
-	Id        string `bson:"_id,omitempty"`
-	Name      string
-	Url       string `binding:"required"`
-	ShortUrl  string
-	CreatedAt time.Time
-	Clicks    int64
-	UserId    primitive.ObjectID
+	Id        primitive.ObjectID `bson:"_id,omitempty" json:"id"`
+	Name      string             `bson:"name" json:"name"`
+	Url       string             `bson:"url" binding:"required" json:"url"`
+	ShortUrl  string             `bson:"shortUrl" json:"shortUrl"`
+	CreatedAt time.Time          `bson:"createdAt" json:"createdAt"`
+	Clicks    int64              `bson:"clicks" json:"clicks"`
+	UserId    primitive.ObjectID `bson:"userId" json:"userId"`
 }
 
 func InitLink() (*Link, error) {
@@ -54,7 +54,7 @@ func (l Link) GetAll(userID primitive.ObjectID) ([]bson.M, error) {
 
 	linksCollection := database.Database("myutilityx").Collection("links")
 
-	cursor, err := linksCollection.Find(ctx, bson.M{"userid": userID})
+	cursor, err := linksCollection.Find(ctx, bson.M{"userId": userID})
 	if err != nil {
 		return nil, err
 	}
@@ -66,6 +66,21 @@ func (l Link) GetAll(userID primitive.ObjectID) ([]bson.M, error) {
 	return links, nil
 }
 
+func FindById(id primitive.ObjectID) (*Link, error) {
+	database, ctx, err := db.Init()
+	if err != nil {
+		return nil, err
+	}
+	linksCollection := database.Database("myutilityx").Collection("links")
+
+	var link Link
+	err = linksCollection.FindOne(ctx, bson.M{"_id": id}).Decode(&link)
+	if err != nil {
+		return nil, err
+	}
+	return &link, nil
+}
+
 func GetSingleAndIncreaseClicks(shortUrl string) (*Link, error) {
 	database, _, err := db.Init()
 	if err != nil {
@@ -74,11 +89,11 @@ func GetSingleAndIncreaseClicks(shortUrl string) (*Link, error) {
 	linksCollection := database.Database("myutilityx").Collection("links")
 
 	var results Link
-	err = linksCollection.FindOne(context.TODO(), bson.M{"shorturl": shortUrl}).Decode(&results)
+	err = linksCollection.FindOne(context.TODO(), bson.M{"shortUrl": shortUrl}).Decode(&results)
 	if err != nil {
 		return nil, err
 	}
-	_, err = linksCollection.UpdateOne(context.Background(), bson.M{"shorturl": shortUrl}, bson.M{"$set": bson.M{"clicks": results.Clicks + 1}})
+	_, err = linksCollection.UpdateOne(context.Background(), bson.M{"shortUrl": shortUrl}, bson.M{"$set": bson.M{"clicks": results.Clicks + 1}})
 	if err != nil {
 		return nil, err
 	}
@@ -93,7 +108,7 @@ func (l Link) Delete() error {
 	}
 	linksCollection := database.Database("myutilityx").Collection("links")
 
-	_, err = linksCollection.DeleteOne(ctx, bson.M{"shorturl": l.ShortUrl})
+	_, err = linksCollection.DeleteOne(ctx, bson.M{"_id": l.Id})
 
 	return err
 }

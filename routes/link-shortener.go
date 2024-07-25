@@ -24,7 +24,7 @@ func addLink(ctx *gin.Context) {
 		return
 	}
 
-	userId,exist := ctx.Get("userId")
+	userId, exist := ctx.Get("userId")
 	if !exist {
 
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Oops,something went wrong!"})
@@ -41,10 +41,10 @@ func addLink(ctx *gin.Context) {
 
 func getAllLinks(ctx *gin.Context) {
 
-	userId,exist := ctx.Get("userId")
+	userId, exist := ctx.Get("userId")
 
 	if !exist {
-		ctx.JSON(http.StatusInternalServerError,gin.H{"message":"Oops! something went wrong!"})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "Oops! something went wrong!"})
 	}
 
 	var link models.Link
@@ -71,19 +71,24 @@ func getSingleUrl(ctx *gin.Context) {
 }
 
 func deleteUrl(ctx *gin.Context) {
-
-	id := ctx.Param("shortId")
-	if strings.HasPrefix(id, "U") {
-		l, err := models.GetSingleAndIncreaseClicks(id)
-		if err != nil {
-			ctx.JSON(http.StatusNotFound, gin.H{"message": "Not found!"})
-		}
-		err = l.Delete()
-		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, gin.H{"message": "failed to delete the link!"})
-		}
-		ctx.JSON(http.StatusOK, gin.H{"message": "deleted successfully!"})
-	} else {
-		ctx.JSON(http.StatusNotFound, gin.H{"message": "Not found!"})
+	id := ctx.Param("id")
+	objectID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "Invalid ID format"})
+		return
 	}
+
+	l, err := models.FindById(objectID)
+	if err != nil {
+		ctx.JSON(http.StatusNotFound, gin.H{"message": "Not found!"})
+		return
+	}
+
+	err = l.Delete()
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to delete the link!"})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"message": "Deleted successfully!"})
 }

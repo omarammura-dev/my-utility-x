@@ -1,9 +1,8 @@
 package routes
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
+	"myutilityx.com/http"
 	"myutilityx.com/middlewares"
 )
 
@@ -15,15 +14,19 @@ func RegisterRoutes() *gin.Engine {
 	//links
 	authenticated.POST("/url/shrink", addLink)
 	authenticated.GET("/url", getAllLinks)
-	authenticated.DELETE("/url/:shortId", deleteUrl)
+	authenticated.DELETE("/url/:id", deleteUrl)
 	server.GET("/:shorturl", getSingleUrl)
 	server.GET("/", func(ctx *gin.Context) {
-		ctx.JSON(http.StatusOK, gin.H{"API": "WORKING"})
+		ctx.JSON(200, gin.H{"API": "WORKING"})
 	})
+	authenticated.POST("/user/update-role", setAdminRole)
+	// server.GET("/", http.PlaygroundHandler())
+	server.POST("/graphql", http.GraphQLHandler())
 	server.GET("/check-db-connection", checkMongoDBConnection)
 	//users
 	server.POST("/user/register", register)
 	server.POST("/save-sms", saveSms)
+	server.POST("/contact-form", contactForm)
 	server.GET("/get-sms", getSms)
 	server.GET("/user/verify", verifyEmail)
 	server.POST("/user/login", login)

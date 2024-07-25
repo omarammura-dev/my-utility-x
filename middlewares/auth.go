@@ -15,12 +15,13 @@ func Authenticate(ctx *gin.Context) {
 		return
 	}
 
-	userId, err := utils.VerifyToken(token)
+	userId, role, err := utils.VerifyToken(token)
 	if err != nil {
 		ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
 
 	ctx.Set("userId", userId)
+	ctx.Set("role", role)
 	ctx.Next()
 }

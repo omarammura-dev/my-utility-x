@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"myutilityx.com/db"
 	"myutilityx.com/errors"
 	"myutilityx.com/mailS"
@@ -21,13 +22,16 @@ func register(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errors.ErrBindingUserData)
 		return
 	}
+
+	user.Role = utils.RoleUser
+
 	err = user.Save()
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	token, err := utils.GenerateToken(user.Email, user.Username, user.ID, time.Hour*2)
+	token, err := utils.GenerateToken(user.Email, user.Username, user.ID, time.Hour*2, utils.Role(user.Role))
 
 	if err != nil {
 		ctx.JSON(http.StatusOK, errors.ErrSomethingWentWrong)
@@ -43,7 +47,7 @@ func register(ctx *gin.Context) {
 
 func login(ctx *gin.Context) {
 
-	var user models.User
+	var user *models.User
 	err := ctx.ShouldBindJSON(&user)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errors.ErrBindingUserData)
@@ -57,7 +61,7 @@ func login(ctx *gin.Context) {
 		return
 	}
 
-	token, err := utils.GenerateToken(user.Email, user.Username, user.ID, time.Hour*2)
+	token, err := utils.GenerateToken(user.Email, user.Username, user.ID, time.Hour*2, utils.Role(user.Role))
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errors.ErrGeneratingToken)
@@ -72,7 +76,7 @@ func verifyEmail(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errors.ErrIncompleteRequest)
 	}
 
-	userId, err := utils.VerifyToken(token)
+	userId, _, err := utils.VerifyToken(token)
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errors.ErrIncorrectOrExpiredToken)
@@ -112,7 +116,7 @@ func resetPassword(ctx *gin.Context) {
 		return
 	}
 
-	token, err := utils.GenerateToken(user.Email, user.Username, user.ID, time.Minute*15)
+	token, err := utils.GenerateToken(user.Email, user.Username, user.ID, time.Minute*15, utils.Role(user.Role))
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "something went wrong (732)!"})
@@ -147,7 +151,7 @@ func resetPasswordVerify(ctx *gin.Context) {
 		return
 	}
 
-	userid, err := utils.VerifyToken(token)
+	userid, _, err := utils.VerifyToken(token)
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errors.ErrIncorrectOrExpiredToken)
@@ -189,3 +193,36 @@ func checkMongoDBConnection(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"message": "Successfully connected to MongoDB"})
 }
 
+func setAdminRole(ctx *gin.Context) {
+	// currentRole, exists := ctx.Get("role")
+	// if !exists || currentRole != utils.RoleAdmin {
+	// 	ctx.JSON(http.StatusForbidden, gin.H{"error": "Are you serious? (:"})
+	// 	return
+	// }
+
+	var requestBody struct {
+		UserID string `json:"userId" binding:"required"`
+	}
+
+	if err := ctx.ShouldBindJSON(&requestBody); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
+		return
+	}
+
+	userID, err := primitive.ObjectIDFromHex(requestBody.UserID)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		return
+	}
+
+	var user models.User
+	user.ID = userID
+
+	err = user.Update(bson.M{"role": string(utils.RoleAdmin)})
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update user role"})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"message": "User role updated to admin successfully"})
+}
