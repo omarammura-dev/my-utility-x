@@ -97,7 +97,8 @@ func verifyEmail(ctx *gin.Context) {
 
 func resetPassword(ctx *gin.Context) {
 	var user models.User
-	err := ctx.ShouldBindJSON(&user)
+  var email string
+	err := ctx.ShouldBindJSON(email)
 
 	if user.Email == "" {
 		ctx.JSON(http.StatusInternalServerError, errors.ErrEmptyEmail)
@@ -123,7 +124,7 @@ func resetPassword(ctx *gin.Context) {
 		return
 	}
 
-	_, err = mailS.SendSimpleMessage(os.Getenv("UI_URL")+"auth/reset-password/confirm/"+token, user.Email, user.Username, "d-325e3a95b2fb497d9c293519596f6a45")
+  _, err = mailS.SendSimpleMessage("https://mux04.com/auth/reset-password/confirm/"+token, user.Email, user.Username, "d-325e3a95b2fb497d9c293519596f6a45")
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errors.ErrSendingResetPasswordEmail)
