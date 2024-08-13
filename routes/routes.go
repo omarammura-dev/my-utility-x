@@ -30,7 +30,6 @@ func RegisterRoutes() *gin.Engine {
 	server.POST("/user/reset-password", resetPassword)
 	server.POST("/user/reset-password/confirm", resetPasswordVerify)
 	authenticated.POST("/user/update-role", setAdminRole)
-
 	//SMS
 	server.POST("/save-sms", saveSms)
 	server.GET("/get-sms", getSms)
