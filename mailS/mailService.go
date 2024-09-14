@@ -10,7 +10,7 @@ import (
 )
 
 func SendSimpleMessage(url, userEmail, username, templateId string) (string, error) {
-	from := mail.NewEmail("Omar Ammura", "no-reply@ammura.tech")
+	from := mail.NewEmail("MUX", "no-reply@ammura.tech")
 	subject := "Sending with SendGrid is Fun"
 	to := mail.NewEmail(username, userEmail)
 	contents := mail.NewContent("text/html", "l")
