@@ -92,7 +92,7 @@ func verifyEmail(ctx *gin.Context) {
 
 	user.ID = userId
 
-	err = user.Update(bson.M{"isverified": true})
+	err = user.Update(bson.M{"isVerified": true})
 
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "oops!" + err.Error()})
