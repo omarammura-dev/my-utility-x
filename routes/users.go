@@ -30,6 +30,7 @@ func register(ctx *gin.Context) {
 		ctx.JSON(http.StatusConflict, errors.ErrUserAlreadyExists)
 		return
 	}
+
 	err = user.Save()
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err.Error())

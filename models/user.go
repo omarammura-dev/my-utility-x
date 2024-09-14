@@ -109,8 +109,8 @@ func (u *User) FindByEmail() error {
 
 	err = database.Database(os.Getenv("MONGO_DB_NAME")).Collection("users").FindOne(ctx, filter).Decode(&result)
 	u.İsVerified = result.İsVerified
-	u.Username = result.Username
-	u.Role = result.Role
+	// u.Username = result.Username
+	// u.Role = result.Role
 	return err
 }
 
