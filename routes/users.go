@@ -57,7 +57,7 @@ func login(ctx *gin.Context) {
 	err = user.ValidateCredintials()
 
 	if err != nil {
-		ctx.JSON(http.StatusUnauthorized, errors.ErrUnAuthorized)
+		ctx.JSON(http.StatusUnauthorized, err.Error())
 		return
 	}
 
