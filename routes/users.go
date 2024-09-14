@@ -98,7 +98,8 @@ func verifyEmail(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "oops!" + err.Error()})
 
 	}
-	ctx.JSON(http.StatusOK, gin.H{"message": "user is verified."})
+	// ctx.JSON(http.StatusOK, gin.H{"message": "user is verified."})
+	ctx.Redirect(http.StatusTemporaryRedirect, "https://app.mux04.com/auth/login")
 }
 
 func resetPassword(ctx *gin.Context) {
