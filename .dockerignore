@@ -1,0 +1,6 @@
+.Dockerfile
+.dockerignore
+.vscode
+.gitlab-ci.yml
+.go.sum
+.docker-compose.yml

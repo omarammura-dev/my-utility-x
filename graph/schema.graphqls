@@ -1,0 +1,39 @@
+# GraphQL schema example
+#
+# https://gqlgen.com/getting-started/
+
+scalar Time
+
+type Link {
+  id: ID!
+  name: String
+  shortUrl: String
+  createdAt: Time
+  clicks: Int
+  userId: ID!
+}
+
+type Contact {
+  id: ID!
+  name: String
+  email: String
+  message: String
+  createdAt: Time
+  from: String
+}
+
+input ContactInput {
+  name: String
+  email: String
+  message: String
+  from: String
+}
+
+type Query {
+  getContact(id: ID!): Contact
+  links: [Link]
+}
+
+type Mutation {
+  createContact(contact: ContactInput): Contact
+}

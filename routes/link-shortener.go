@@ -1,35 +1,21 @@
 package routes
 
 import (
-	"log"
 	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"myutilityx.com/errors"
 	"myutilityx.com/models"
-	"myutilityx.com/utils"
 )
 
 func addLink(ctx *gin.Context) {
 
-	token := ctx.Request.Header.Get("Authorization")
-
-	if token == "" {
-		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Not Authorized (empty)"})
-		return
-	}
-
-	userId, err := utils.VerifyToken(token)
-
-
-
-	if err != nil {
-		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Not Authorized!" +err.Error()})
-		return
-	}
 	link, err := models.InitLink()
 	if err != nil {
-		log.Fatalf("Something went wrong... %v", err)
+		ctx.JSON(http.StatusBadRequest, errors.ErrSomethingWentWrong)
+		return
 	}
 	err = ctx.ShouldBindJSON(&link)
 
@@ -38,7 +24,12 @@ func addLink(ctx *gin.Context) {
 		return
 	}
 
-	link.UserId = userId
+	userId, exist := ctx.Get("userId")
+	if !exist {
+
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Oops,something went wrong!"})
+	}
+	link.UserId = userId.(primitive.ObjectID)
 	err = link.Save()
 
 	if err != nil {
@@ -49,8 +40,16 @@ func addLink(ctx *gin.Context) {
 }
 
 func getAllLinks(ctx *gin.Context) {
+
+	userId, exist := ctx.Get("userId")
+
+	if !exist {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "Oops! something went wrong!"})
+	}
+
 	var link models.Link
-	linkList, err := link.GetAll()
+
+	linkList, err := link.GetAll(userId.(primitive.ObjectID))
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "failed to get the links!"})
 	}
@@ -58,6 +57,7 @@ func getAllLinks(ctx *gin.Context) {
 }
 
 func getSingleUrl(ctx *gin.Context) {
+
 	shortUrl := ctx.Param("shorturl")
 	if strings.HasPrefix(shortUrl, "U") {
 		l, err := models.GetSingleAndIncreaseClicks(shortUrl)
@@ -71,18 +71,24 @@ func getSingleUrl(ctx *gin.Context) {
 }
 
 func deleteUrl(ctx *gin.Context) {
-	id := ctx.Param("shortId")
-	if strings.HasPrefix(id, "U") {
-		l, err := models.GetSingleAndIncreaseClicks(id)
-		if err != nil {
-			ctx.JSON(http.StatusNotFound, gin.H{"message": "Not found!"})
-		}
-		err = l.Delete()
-		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, gin.H{"message": "failed to delete the link!"})
-		}
-		ctx.JSON(http.StatusOK, gin.H{"message": "deleted successfully!"})
-	} else {
-		ctx.JSON(http.StatusNotFound, gin.H{"message": "Not found!"})
+	id := ctx.Param("id")
+	objectID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"message": "Invalid ID format"})
+		return
 	}
+
+	l, err := models.FindById(objectID)
+	if err != nil {
+		ctx.JSON(http.StatusNotFound, gin.H{"message": "Not found!"})
+		return
+	}
+
+	err = l.Delete()
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to delete the link!"})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"message": "Deleted successfully!"})
 }
