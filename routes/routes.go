@@ -37,5 +37,12 @@ func RegisterRoutes() *gin.Engine {
 	authenticated.POST("/expense/add", addExpense)
 	authenticated.PUT("/expense/update/:id", updateExpense)
 	authenticated.GET("/expense/all", GetAllExpenses)
+
+
+
+	server.GET("/get-file/:fileId", getFile)
+	authenticated.POST("/upload-file", uploadFile)
+  authenticated.GET("/files",getFiles)
+  authenticated.DELETE("/file/:id",deletFile)
 	return server
 }

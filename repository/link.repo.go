@@ -35,7 +35,6 @@ func (d *database) FindAll() ([]*model.Link, error) {
 
 	cursor, err := linksCollection.Find(context.TODO(), bson.M{})
 	if err != nil {
-		log.Fatal("GAileeee")
 		return nil, err
 	}
 	defer cursor.Close(context.TODO())
