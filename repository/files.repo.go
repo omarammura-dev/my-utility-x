@@ -14,7 +14,7 @@ import (
 
 type FilesRepository interface {
 	AddFile(ctx context.Context, f models.File) error
-	DeleteFile(ctx context.Context, f models.File) error
+	DeleteFile(ctx context.Context,  fileId string, userId primitive.ObjectID) error
 	GetFile(ctx context.Context, f models.File) (*models.File, error)
 	GetAll(ctx context.Context, f models.File,userId primitive.ObjectID) ([]*models.File, error)
 }
@@ -70,7 +70,7 @@ func (fr *MongoFilesRepo) GetAll(ctx context.Context, userId primitive.ObjectID)
 	return result, nil
 }
 
-func (fr *MongoFilesRepo) DeleteFile(ctx context.Context, id primitive.ObjectID,userId primitive.ObjectID) error {
-  _, err := fr.db.DeleteOne(ctx, bson.M{"_id": id,"userId":userId})
+func (fr *MongoFilesRepo) DeleteFile(ctx context.Context, fileId string,userId primitive.ObjectID) error {
+  _, err := fr.db.DeleteOne(ctx, bson.M{"fileId": fileId,"userId":userId})
 	return err
 }

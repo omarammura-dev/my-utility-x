@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 	"time"
@@ -60,13 +61,13 @@ func login(ctx *gin.Context) {
 		return
 	}
 
-	err = user.ValidateCredintials()
+	err = user.ValidateCredintials(user.Password)
 
 	if err != nil {
 		ctx.JSON(http.StatusUnauthorized, err.Error())
 		return
 	}
-
+	fmt.Print(user)
 	token, err := utils.GenerateToken(user.Email, user.Username, user.ID, time.Hour*2, utils.Role(user.Role))
 
 	if err != nil {

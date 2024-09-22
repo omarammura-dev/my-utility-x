@@ -110,23 +110,29 @@ func getFiles(ctx *gin.Context) {
 	}
 }
 
-func deletFile(ctx *gin.Context) {
+func deleteFile(ctx *gin.Context) {
 	userId, exist := ctx.Get("userId")
-	id := ctx.Param("id")
+	fileId := ctx.Param("fileId")
 	fileRepo := repository.NewFileRepository()
 
 	if !exist {
 		ctx.JSON(401, errors.ErrUnAuthorized)
+    return
 	}
 
 	if userId, ok := userId.(primitive.ObjectID); ok {
-
-		objID, err := primitive.ObjectIDFromHex(id)
-		if err != nil {
-			panic(err)
-		}
-		fileRepo.DeleteFile(ctx, objID, userId)
-
+		fileRepo.DeleteFile(ctx, fileId, userId)
 	}
+
+  req := &grpc.DeleteFileRequest{
+    FileId:fileId,
+  }
+
+  client := grpc.Connect()
+  res,err := client.DeleteFile(ctx,req)
+  if err != nil || !res.Ok{
+    ctx.JSON(400,errors.ErrSomethingWentWrong)
+    return
+  }
 
 }

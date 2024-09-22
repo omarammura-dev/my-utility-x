@@ -41,6 +41,6 @@ func RegisterRoutes() *gin.Engine {
 	server.GET("/get-file/:fileId", getFile)
 	authenticated.POST("/upload-file", uploadFile)
 	authenticated.GET("/files", getFiles)
-	authenticated.DELETE("/file/:id", deletFile)
+	authenticated.DELETE("/file/:fileId", deleteFile)
 	return server
 }
