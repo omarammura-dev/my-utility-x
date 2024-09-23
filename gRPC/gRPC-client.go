@@ -16,7 +16,7 @@ var (
 func Connect() StorageClient {
 	once.Do(func() {
 		var err error
-		conn, err = grpc.Dial("localhost:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
+		conn, err = grpc.NewClient("localhost:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
 		if err != nil {
 			log.Fatalf("failed to connect to Python gRPC server at localhost:50051: %v", err)
 		}

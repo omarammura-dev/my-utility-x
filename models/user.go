@@ -86,6 +86,7 @@ func (u *User) FindByEmail() error {
 	filter := bson.M{"email": u.Email}
 
 	err = database.Database(os.Getenv("MONGO_DB_NAME")).Collection("users").FindOne(ctx, filter).Decode(u)
+	
 	if err != nil {
 		return err
 	}
