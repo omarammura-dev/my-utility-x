@@ -8,6 +8,7 @@ import (
 
 func RegisterRoutes() *gin.Engine {
 	server := gin.Default()
+	server.MaxMultipartMemory = 32 << 20 // 32 MiB
 	server.Use(middlewares.CORSMiddleware())
 	authenticated := server.Group("/")
 	authenticated.Use(middlewares.Authenticate)

@@ -15,8 +15,8 @@ func Init() (*mongo.Client, context.Context, error) {
 
 	fmt.Print(os.Getenv("MONGO_URL"))
 	opts := options.Client().ApplyURI(os.Getenv("MONGO_URL"))
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+
 	client, err := mongo.Connect(ctx, opts)
 
 	if err != nil {
@@ -34,8 +34,8 @@ func InitNew() (*mongo.Database, context.Context, error) {
 
 	fmt.Print(os.Getenv("MONGO_URL"))
 	opts := options.Client().ApplyURI(os.Getenv("MONGO_URL"))
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+
 	client, err := mongo.Connect(ctx, opts)
 	if err != nil {
 		log.Printf("Failed to connect to MongoDB: %v", err)
